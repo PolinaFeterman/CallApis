@@ -32,7 +32,7 @@ namespace CallApis
         public int Amount { get; set; }
     }
 
-    class Program
+    public class CA
     {
         private const string URL = "https://maps.googleapis.com/maps/api/timezone/json";
         private const string urlParameters = @"?location=39.6034810%2C-119.6822510
@@ -119,7 +119,7 @@ namespace CallApis
                 }
             }
         }
-        private T DeserializeObjectFromJson<T>(string result)
+        public T DeserializeObjectFromJson<T>(string result)
         {
             return JsonConvert.DeserializeObject<T>(result);
         }
