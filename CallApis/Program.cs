@@ -14,7 +14,6 @@ namespace CallApis
         public string WarehouseAddress { get; set; }
         public IList<double> PackageDimentions { get; set; }
     }
-
     internal struct Input2
     {
         public string Consignee { get; set; }
@@ -25,23 +24,22 @@ namespace CallApis
     {
         public int Total { get; set; }
     }
-
     internal struct Ans2
     {
         public int Amount { get; set; }
     }
 
-    public class CA : IDisposable
+    public class CA
     {
 
-        HttpClient httpClient;
+        private  HttpClient client;
         static async Task Main(string[] args)
         {
             var callApi = new CA();
             var results = await callApi.CallApiAsync();
             var ans = callApi.GetMinimum(results);
+            Console.WriteLine(ans);
         }
-
         public int GetMinimum(IEnumerable<int> numbers)
         {
             return numbers.Min();
@@ -104,14 +102,14 @@ namespace CallApis
 
         public async Task<HttpResponseMessage> MakeRestCallAsync(Uri uri, string input)
         {
-            using (httpClient = new HttpClient())
+            using (client = new HttpClient())
             {
                 using (var formData = new MultipartFormDataContent())
                 {
                     //add content to form data
                     formData.Add(new StringContent(input), "Input");
 
-                    return await httpClient.PostAsync(uri, formData);
+                    return await client.PostAsync(uri, formData);
                     
                 }
             }
@@ -134,10 +132,6 @@ namespace CallApis
             return new List<int> { task1.Result, task2.Result, task3.Result };
         }
 
-        public void Dispose()
-        {
-            httpClient.Dispose();
-        }
     }
 }
   
