@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using System.Xml;
 
 namespace CallApis
@@ -32,20 +31,20 @@ namespace CallApis
         public int Amount { get; set; }
     }
 
-    public class CA
+    public class CA : IDisposable
     {
-        private const string URL = "https://maps.googleapis.com/maps/api/timezone/json";
-        private const string urlParameters = @"?location=39.6034810%2C-119.6822510
-  & timestamp = 1331161200
-  & key = AIzaSyCLMrAHDUvVYWi1uxWWQ3MG60wG2 - 8sayc";
-        /// AIzaSyCLMrAHDUvVYWi1uxWWQ3MG60wG2-8sayc  
 
+        HttpClient httpClient;
         static async Task Main(string[] args)
         {
-            var callApi = new Program();
+            var callApi = new CA();
             var results = await callApi.CallApiAsync();
-            var ans = results.Min();
-           
+            var ans = callApi.GetMinimum(results);
+        }
+
+        public int GetMinimum(IEnumerable<int> numbers)
+        {
+            return numbers.Min();
         }
 
         private Task<int> Call1Async()
@@ -78,7 +77,6 @@ namespace CallApis
 
             return Task.FromResult(json.Amount);
         }
-
         private Task<int> Call3Async()
         {
             Uri uri = new Uri("https://httpbin.org/post");
@@ -104,24 +102,23 @@ namespace CallApis
             return Task.FromResult(-1);
         }
 
-        private async Task<HttpResponseMessage> MakeRestCallAsync(Uri uri, string input)
+        public async Task<HttpResponseMessage> MakeRestCallAsync(Uri uri, string input)
         {
-            using (var httpClient = new HttpClient())
+            using (httpClient = new HttpClient())
             {
                 using (var formData = new MultipartFormDataContent())
                 {
                     //add content to form data
                     formData.Add(new StringContent(input), "Input");
 
-
                     return await httpClient.PostAsync(uri, formData);
                     
                 }
             }
         }
-        public T DeserializeObjectFromJson<T>(string result)
+        public T DeserializeObjectFromJson<T>(string jsonString)
         {
-            return JsonConvert.DeserializeObject<T>(result);
+            return JsonConvert.DeserializeObject<T>(jsonString);
         }
 
         
@@ -135,6 +132,11 @@ namespace CallApis
             await Task.WhenAll(task1, task2, task3);
 
             return new List<int> { task1.Result, task2.Result, task3.Result };
+        }
+
+        public void Dispose()
+        {
+            httpClient.Dispose();
         }
     }
 }
